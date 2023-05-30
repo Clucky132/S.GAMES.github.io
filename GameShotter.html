@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <title>Mobile Shooting Game</title>
+
+  <style>
+
+    body {
+
+      background-color: black;
+
+    }
+
+    
+
+    canvas {
+
+      border: 1px solid black;
+
+      display: block;
+
+      margin: 0 auto;
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <canvas id="gameCanvas"></canvas>
+
+  <script>
+
+    const canvas = document.getElementById("gameCanvas");
+
+    const ctx = canvas.getContext("2d");
+
+    // Game variables
+
+    let playerX = canvas.width / 2;
+
+    const playerY = canvas.height - 30;
+
+    const playerWidth = 30;
+
+    const playerHeight = 30;
+
+    const bulletHeight = 10;
+
+    const bulletWidth = 5;
+
+    const targetRadius = 15;
+
+    let bullets = [];
+
+    let targets = [];
+
+    let score = 0;
+
+    function drawPlayer() {
+
+      ctx.beginPath();
+
+      ctx.rect(playerX, playerY, playerWidth, playerHeight);
+
+      ctx.fillStyle = "blue";
+
+      ctx.fill();
+
+      ctx.closePath();
+
+    }
+
+    function drawBullets() {
+
+      for (let i = 0; i < bullets.length; i++) {
+
+        ctx.beginPath();
+
+        ctx.rect(bullets[i].x, bullets[i].y, bulletWidth, bulletHeight);
+
+        ctx.fillStyle = "red";
+
+        ctx.fill();
+
+        ctx.closePath();
+
+      }
+
+    }
+
+    function drawTargets() {
+
+      for (let i = 0; i < targets.length; i++) {
+
+        ctx.beginPath();
+
+        ctx.arc(targets[i].x, targets[i].y, targetRadius, 0, Math.PI * 2);
+
+        ctx.fillStyle = "green";
+
+        ctx.fill();
+
+        ctx.closePath();
+
+      }
+
+    }
+
+    function shootBullet() {
+
+      const bullet = {
+
+        x: playerX + playerWidth / 2 - bulletWidth / 2,
+
+        y: playerY,
+
+        speed: 5
+
+      };
+
+      bullets.push(bullet);
+
+    }
+
+    function spawnTarget() {
+
+      const target = {
+
+        x: Math.random() * (canvas.width - targetRadius * 2) + targetRadius,
+
+        y: -targetRadius,
+
+        speed: 2
+
+      };
+
+      targets.push(target);
+
+    }
+
+    function updateBullets() {
+
+      for (let i = 0; i < bullets.length; i++) {
+
+        bullets[i].y -= bullets[i].speed;
+
+        if (bullets[i].y < 0) {
+
+          bullets.splice(i, 1);
+
+        }
+
+      }
+
+    }
+
+    function updateTargets() {
+
+      for (let i = 0; i < targets.length; i++) {
+
+        targets[i].y += targets[i].speed;
+
+        if (targets[i].y > canvas.height + targetRadius) {
+
+          targets.splice(i, 1);
+
+        }
+
+      }
+
+    }
+
+    function checkCollision() {
+
+      for (let i = 0; i < bullets.length; i++) {
+
+        for (let j = 0; j < targets.length; j++) {
+
+          const dx = bullets[i].x - targets[j].x;
+
+          const dy = bullets[i].y - targets[j].y;
+
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < bulletHeight + targetRadius) {
+
+            bullets.splice(i, 1);
+
+            targets.splice(j, 1);
+
+            score++;
+
+          }
+
+        }
+
+      }
+
+    }
+
+    function drawScore() {
+
+      ctx.font = "16px Arial";
+
+      ctx.fillStyle = "white";
+
+      ctx.fillText("Score: " + score, 8, 20);
+
+    }
+
+    function draw() {
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawPlayer();
+
+      drawBullets();
+
+      drawTargets();
+
+      drawScore();
+
+      updateBullets();
+
+      updateTargets();
+
+      checkCollision();
+
+    }
+
+    function keyDownHandler(event) {
+
+      if (event.keyCode === 32) { // Space key
+
+        shootBullet();
+
+      }
+
+    }
+
+    function touchStartHandler(event) {
+
+      event.preventDefault();
+
+      shootBullet();
+
+    }
+
+    function touchMoveHandler(event) {
+
+      event.preventDefault();
+
+      const touchX = event.touches[0].clientX - canvas.offsetLeft;
+
+      playerX = touchX - playerWidth / 2;
+
+    }
+
+    document.addEventListener("keydown", keyDownHandler, false);
+
+    document.addEventListener("touchstart", touchStartHandler, false);
+
+    document.addEventListener("touchmove", touchMoveHandler, false);
+
+    setInterval(spawnTarget, 1000); // Spawn a target every second
+
+    setInterval(shootBullet, 500); // Automatically shoot every half second
+
+    setInterval(draw, 10); // Adjust the interval as needed
+
+  </script>
+
+</body>
+
+</html>
+
